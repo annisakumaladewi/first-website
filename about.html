@@ -2,12 +2,42 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>D3 Bar Chart</title>
+    <title>About - D3 Bar Chart</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+        background: #f9f9f9;
+      }
+      h2 {
+        margin-bottom: 1rem;
+        color: #333;
+      }
+      .bar {
+        fill: steelblue;
+        transition: fill 0.2s;
+      }
+      .bar:hover {
+        fill: #1a5276;
+      }
+      .value-label {
+        font-size: 12px;
+        text-anchor: middle;
+        fill: #333;
+      }
+      .axis-label {
+        font-size: 13px;
+        fill: #555;
+      }
+    </style>
   </head>
   <body>
     <h2>D3 Bar Chart</h2>
-    <svg width="500" height="300"></svg>
+    <svg></svg>
 
     <script>
       const data = [
@@ -17,46 +47,78 @@
         { name: "D", value: 10 },
       ];
 
-      const svg = d3.select("svg");
-      const width = 500;
-      const height = 300;
-      const margin = 40;
+      const margin = { top: 30, right: 30, bottom: 50, left: 50 };
+      const width = 500 - margin.left - margin.right;
+      const height = 320 - margin.top - margin.bottom;
 
-      // Create scales
+      const svg = d3
+        .select("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      // Scales
       const x = d3
         .scaleBand()
         .domain(data.map((d) => d.name))
-        .range([margin, width - margin])
-        .padding(0.2);
+        .range([0, width])
+        .padding(0.3);
 
       const y = d3
         .scaleLinear()
         .domain([0, d3.max(data, (d) => d.value)])
         .nice()
-        .range([height - margin, margin]);
+        .range([height, 0]);
 
-      // Draw bars
+      // Bars
       svg
-        .selectAll("rect")
+        .selectAll(".bar")
         .data(data)
         .join("rect")
+        .attr("class", "bar")
         .attr("x", (d) => x(d.name))
         .attr("y", (d) => y(d.value))
         .attr("width", x.bandwidth())
-        .attr("height", (d) => height - margin - y(d.value))
-        .attr("fill", "steelblue");
+        .attr("height", (d) => height - y(d.value));
+
+      // Value labels above bars
+      svg
+        .selectAll(".value-label")
+        .data(data)
+        .join("text")
+        .attr("class", "value-label")
+        .attr("x", (d) => x(d.name) + x.bandwidth() / 2)
+        .attr("y", (d) => y(d.value) - 6)
+        .text((d) => d.value);
 
       // X Axis
       svg
         .append("g")
-        .attr("transform", `translate(0,${height - margin})`)
+        .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x));
 
-      // Y Axis
+      // X Axis label
       svg
-        .append("g")
-        .attr("transform", `translate(${margin},0)`)
-        .call(d3.axisLeft(y));
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("x", width / 2)
+        .attr("y", height + 40)
+        .attr("text-anchor", "middle")
+        .text("Category");
+
+      // Y Axis
+      svg.append("g").call(d3.axisLeft(y));
+
+      // Y Axis label
+      svg
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -38)
+        .attr("text-anchor", "middle")
+        .text("Value");
     </script>
   </body>
 </html>
