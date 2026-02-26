@@ -1,1 +1,62 @@
-<p>This is the about page</p>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>D3 Bar Chart</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <h2>D3 Bar Chart</h2>
+    <svg width="500" height="300"></svg>
+
+    <script>
+      const data = [
+        { name: "A", value: 1 },
+        { name: "B", value: 5 },
+        { name: "C", value: 8 },
+        { name: "D", value: 10 },
+      ];
+
+      const svg = d3.select("svg");
+      const width = 500;
+      const height = 300;
+      const margin = 40;
+
+      // Create scales
+      const x = d3
+        .scaleBand()
+        .domain(data.map((d) => d.name))
+        .range([margin, width - margin])
+        .padding(0.2);
+
+      const y = d3
+        .scaleLinear()
+        .domain([0, d3.max(data, (d) => d.value)])
+        .nice()
+        .range([height - margin, margin]);
+
+      // Draw bars
+      svg
+        .selectAll("rect")
+        .data(data)
+        .join("rect")
+        .attr("x", (d) => x(d.name))
+        .attr("y", (d) => y(d.value))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => height - margin - y(d.value))
+        .attr("fill", "steelblue");
+
+      // X Axis
+      svg
+        .append("g")
+        .attr("transform", `translate(0,${height - margin})`)
+        .call(d3.axisBottom(x));
+
+      // Y Axis
+      svg
+        .append("g")
+        .attr("transform", `translate(${margin},0)`)
+        .call(d3.axisLeft(y));
+    </script>
+  </body>
+</html>
